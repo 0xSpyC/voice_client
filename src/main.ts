@@ -1,6 +1,6 @@
-import '../css/style.css'
-import '../css/visualizer.css'
-import '../css/voice-client.css'
+import './css/style.css'
+import './css/visualizer.css'
+import './css/voice-client.css'
 import * as UI from './ui'
 import { createWebSocketConnection } from './websocket'
 import { createAudioManager } from './audio'
@@ -102,11 +102,27 @@ function onWsMessage(data: any) {
         // Check if data is a string or an ArrayBuffer
         if (typeof data === 'string') {
             console.log("Received string message from server:", data);
+            const jsonData = JSON.parse(data);
+            if (jsonData.command) {
+                console.log("Command received:", jsonData.command);
+                switch (jsonData.command.toLowerCase()) {
+                    case "end_of_sythesis":
+                        onResponseFinished();
+                    default:
+                        console.warn("Unknown command received:", jsonData.command);
+                }
+            }
+            
         } else {
-            const audioBlob: Blob = new Blob([data], { type: 'audio/wav' });
-            console.log("Received audio blob from server.");
-            UI.updateStatus('Responding...', '#ffffff');
-            state.audioManager.playResponse(audioBlob, state);
+            // NON STREAMING MODE
+            // const audioBlob: Blob = new Blob([data], { type: 'audio/wav' });
+            // console.log("Received audio blob from server.");
+            // UI.updateStatus('Responding...', '#ffffff');
+            // state.audioManager.playResponse(audioBlob, state);
+            // STREAMING MODE
+            console.log("Received binary data from server, playing audio chunk.", data);
+            const pcmChunck = new Uint8Array(data);
+            state.audioManager.playPCMChunk(pcmChunck);
         }
 
     } catch (error) {

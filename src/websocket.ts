@@ -1,5 +1,6 @@
 export function createWebSocketConnection(url: string, onOpen: Function, onMessage: Function, onError: Function, onClose: Function) {
     const ws = new WebSocket(url);
+    ws.binaryType = "arraybuffer";
 
     ws.onopen = () => {
         console.log("WebSocket connection established.");
